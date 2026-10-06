@@ -1,0 +1,18 @@
+
+
+USE ECOM;
+
+
+create table CUSOMERS(
+CUST_ID varchar(255),
+FIRST_NAME varchar(250),
+LAST_NAME varchar(255),
+EMAIL varchar(250),
+GENDER enum("MALE","FEMALE","OTHERS"),
+PHONE varchar(10),
+ANNUAL_INCOME DECIMAL(10,2));
+SELECT * 
+FROM CUSOMERS; 
+
+describe CUSOMERS
+
