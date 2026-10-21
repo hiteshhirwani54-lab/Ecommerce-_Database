@@ -396,7 +396,7 @@ GROUP BY ORDER_STATUS;
 
 SELECT AVG(ANNUAL_INCOME) AS AVERAGE_INCOME FROM CUSOMERS;
 
--- 25. Identify products that have generated total sales greater than ₹10,000.
+-- 25. Identify products that have generated total sales greater than ₹2000
 
 SELECT P.PROD_NAME, SUM(S.SALES) AS TOTAL_SALES
 FROM PRODUCTS P
@@ -404,6 +404,211 @@ JOIN SALES S
 ON P.PROD_ID = S.PROD_ID
 GROUP BY P.PROD_NAME
 HAVING TOTAL_SALES > 2000;
+
+-- 26. Find customers whose total sales exceed ₹2000
+
+select c. FIRST_NAME, C.LAST_NAME, SUM(S.SALES) AS TOTAL_SALES
+FROM CUSOMERS C 
+left join SALES S 
+ON C.CUST_ID = S.CUST_ID
+GROUP BY C.FIRST_NAME, C.LAST_NAME
+having TOTAL_SALES > 5000;
+
+SELECT CONCAT(COALESCE(C.FIRST_NAME," "),' ',COALESCE(C.LAST_NAME," ")) AS FULL_NAME,
+SUM(S.SALES) AS TOTAL_SALES
+FROM CUSOMERS C 
+left join SALES S 
+ON C.CUST_ID = S.CUST_ID
+group by FULL_NAME
+having TOTAL_SALES > 2000;
+
+-- 27. Identify locations where total revenue exceeds ₹2000
+
+SELECT O.SHIPPING_ADDRESS, SUM(S.SALES*S.QUANTITY) AS TOTAL_REVENUE
+FROM ORDERS AS O 
+JOIN SALES AS S
+ON O.ORDER_ID = S.ORDER_ID
+group by O.SHIPPING_ADDRESS
+HAVING TOTAL_REVENUE > 2000;
+
+-- DISPLAY EACH CUSTOMERS FULL NAME AND ANNUAL INCOME 
+
+SELECT concat(COALESCE(FIRST_NAME," "),' ',COALESCE(LAST_NAME," ")) AS FULL_NAME,
+ANNUAL_INCOME
+FROM CUSOMERS;
+
+-- 29. Find customers who have placed more than one order.
+
+SELECT CUST_ID, COUNT(*) AS TOTAL_ORDERS
+FROM ORDERS
+group by CUST_ID
+HAVING TOTAL_ORDERS > 1;
+
+-- 30. Identify customers who have never placed an order.
+
+SELECT * FROM CUSOMERS 
+WHERE CUST_ID NOT IN (SELECT distinct CUST_ID FROM ORDERS);
+
+-- 31. Find customers who have made purchases worth more than ₹ 2,000 in total.
+
+SELECT CUST_ID, SUM(SALES) AS TOTAL_SALES
+FROM SALES
+group by CUST_ID
+HAVING TOTAL_SALES > 2000;
+
+-- 32. Identify the customer who generated the highest total revenue.
+
+SELECT CUST_ID, SUM(SALES*QUANTITY) AS TOTAL_REVENUE
+FROM SALES
+GROUP BY CUST_ID
+ORDER BY TOTAL_REVENUE DESC LIMIT 1;
+
+SELECT * FROM CUSOMERS
+WHERE CUST_ID = (SELECT CUST_ID
+FROM SALES
+GROUP BY CUST_ID
+ORDER BY SUM(SALES*QUANTITY) DESC LIMIT 1);
+
+-- 33. Find the number of orders placed by each customer.
+
+-- 34. Calculate the average order value for each customer.
+
+-- 35. 
+
+-- 36. 
+
+-- 37. 
+
+-- 38. Find customers with annual income greater than the average annual income of all customers.
+	
+    SELECT * 
+    FROM CUSOMERS
+    WHERE ANNUAL_INCOME > (SELECT AVG(ANNUAL_INCOME) FROM CUSOMERS);
+    
+    -- 39. Identify the top three customers based on total sales.
+    
+    SELECT CONCAT(COALESCE(FIRST_NAME," "),' ',COALESCE(LAST_NAME," ")) AS FULL_NAME,
+    SUM(SALES) AS TOTAL_SALES
+    FROM CUSOMERS c
+    JOIN SALES S
+    ON C.CUST_ID = S.CUST_ID
+    GROUP BY FULL_NAME
+    ORDER BY TOTAL_SALES DESC LIMIT 3;
+    
+    CREATE DATABASE EXAMPLE;
+USE EXAMPLE;
+SELECT * FROM DATA;
+
+USE ECOM;
+
+-- 40. Find customers who purchased products from more than one category.
+
+SELECT CONCAT(COALESCE(FIRST_NAME," "),' ',COALESCE(LAST_NAME," ")) AS FULL_NAME,
+COUNT(ORDER_ID) AS TOTAL_ORDERS,
+COUNT(CATEGORY) AS TOTAL_CATEGORIES
+FROM SALES AS S
+JOIN CUSOMERS AS C
+ON S.CUST_ID = C.CUST_ID
+JOIN PRODUCTS AS P
+ON S.PROD_ID = P.PROD_ID
+GROUP BY FULL_NAME;
+
+-- 41. Display each product's name, category, unit price, and total quantity sold.
+
+SELECT
+    p.prod_name,
+    p.category,
+    p.unit_price,
+    COALESCE(SUM(s.quantity), 0) AS total_quantity_sold
+FROM Products p
+LEFT JOIN Sales s
+    ON p.prod_id = s.prod_id
+GROUP BY
+    p.prod_id,
+    p.prod_name,
+    p.category,
+    p.unit_price;
+    
+-- 42. Identify products that have never been sold.
+
+SELECT PROD_NAME,SUM(QUANTITY) AS TOTAL_QUANTITY
+FROM PRODUCTS AS P
+LEFT JOIN SALES AS S
+ON P.PROD_ID = S.PROD_ID
+GROUP BY PROD_NAME
+HAVING TOTAL_QUANTITY IS NULL;
+
+
+-- 43.  Find the most frequently sold product based on total quantity.
+SELECT PROD_NAME,CATEGORY,UNIT_PRICE,SUM(QUANTITY) AS TOTAL_QUANTITY
+FROM PRODUCTS AS P
+JOIN SALES AS S
+ON P.PROD_ID = S.PROD_ID
+GROUP  BY PROD_NAME
+ORDER BY TOTAL_QUANTITY DESC LIMIT 1;
+
+-- 44. Identify the product generating the highest total profit.
+
+SELECT PROD_NAME,SUM(PROFIT) AS TOTAL_PROFIT
+FROM PRODUCTS AS P
+JOIN SALES AS S
+ON P.PROD_ID = S.PROD_ID
+GROUP  BY PROD_NAME
+ORDER BY TOTAL_PROFIT DESC LIMIT 1;
+
+-- 45. Find products whose unit price is greater than the average price of all products.
+
+SELECT
+prod_id,prod_name,unit_price
+FROM Products
+WHERE unit_price >
+(SELECT AVG(unit_price) FROM Products);
+
+-- 46.  Calculate the revenue contribution of each product category as a percentage of total revenue.
+
+
+SELECT
+p.category, SUM(s.SALES) AS category_revenue,
+ROUND(SUM(s.SALES) * 100.0/(SELECT SUM(SALES) FROM Sales),2) AS revenue_percentage
+FROM Products p
+JOIN Sales s
+ON p.prod_id = s.prod_id
+GROUP BY p.category
+ORDER BY revenue_percentage DESC;
+
+-- 47. Find products that generated revenue below the average product revenue.
+
+SELECT p.prod_id,p.prod_name, SUM(s.quantity * s.SALES) AS total_revenue
+FROM Products p
+JOIN Sales s
+ON p.prod_id = s.prod_id
+GROUP BY p.prod_id, p.prod_name
+HAVING SUM(s.quantity * s.SALES) < (SELECT AVG(prod_revenue)
+FROM (SELECT SUM(quantity * SALES) AS prod_revenue
+FROM Sales
+GROUP BY prod_id) AS revenue_table)
+ORDER BY total_revenue ASC;
+
+-- 48. Identify the top three products based on total quantity sold.
+
+SELECt p.prod_id, p.prod_name, SUM(s.quantity) AS total_quantity_sold
+FROM Products p
+JOIN Sales s
+ON p.prod_id = s.prod_id
+GROUP BY
+p.prod_id, p.prod_name
+ORDER BY total_quantity_sold DESC LIMIT 3;
+
+-- 49. Compare each product's unit price with its average sales value per unit.
+
+
+
+
+
+
+
+
+
 
 
 
